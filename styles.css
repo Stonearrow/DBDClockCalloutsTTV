@@ -1,0 +1,146 @@
+/* GLOBAL */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* BASE */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #18181b;
+    color: white;
+    padding: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+#app {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    user-select: none;
+    max-height: 100%;
+}
+
+#banner {
+    text-align: center;
+}
+
+/* SEARCH BAR */
+#searchbar input {
+    padding: 14px 16px;
+    width: 100%;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* DROPDOWNS */
+.dropdown {
+    margin-bottom: 10px;
+}
+
+.dropdown-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #9146ff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: left;
+}
+.dropdown-btn.center-text {
+    text-align: center;
+}
+
+/* DEFAULT HIDDEN */
+.dropdown-content {
+    display: none;
+    background-color: #26262c;
+}
+
+/* MOBILE */
+.dropdown.open .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 12px;
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.dropdown-content a:hover {
+    background-color: #3a3a40;
+}
+
+/* MAP VIEW */
+#map-view {
+    text-align: center;
+    width: 100%;
+    object-fit: contain;
+}
+
+#map-image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin: 10px 0;
+}
+
+#back-btn {
+    padding: 10px 16px;
+    background-color: #9146ff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+/* WIPE ANIMATION  */
+#wipe {
+    position: absolute;
+    top: 0;
+    left: -100vw;
+    width: 100vw;
+    height: 100%;
+    background-color: #18181b;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.wipe-in-right {
+    animation: wipeInRight 0.4s forwards;
+}
+
+.wipe-in-left {
+    animation: wipeInLeft 0.4s forwards;
+}
+
+@keyframes wipeInRight {
+    from { left: 100vw; }
+    to { left: 0; }
+}
+
+@keyframes wipeInLeft {
+    from { left: -100vw; }
+    to { left: 0; }
+}
+
+/*  SMALL SCREENS  */
+@media (max-width: 480px) {
+    body {
+        padding: 6px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+    #map-image {
+        max-height: 200px;
+    }
+}

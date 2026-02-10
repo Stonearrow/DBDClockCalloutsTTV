@@ -1,0 +1,18 @@
+{
+  "manifest_version": 1,
+  "name": "DBD Clock Map Panel Extension",
+  "version": "0.1.0",
+  "description": "Shows clock-based map callouts to help viewers understand player positioning.",
+  "author_name": "MatoGi",
+
+  "icon_url": "images/Other/icon.png",
+
+  "permissions": [],
+
+  "views": {
+    "panel": {
+      "viewer_url": "index.html",
+      "height": 450
+    }
+  }
+}
