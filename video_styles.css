@@ -1,0 +1,213 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+#toggle-tab {
+    position: absolute;
+    right: 0; /* Tab right side */
+    /*left: 0;*/ /* Tab left side */
+    top: 52px;
+    width: 28px;
+    height: 65px;
+    background: rgba(145,70,255,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px 0 0 8px;
+    user-select: none;
+    transition: background 0.2s ease, opacity 0.2 ease, left 0.3 ease;
+    transform: translateY(-50%);
+    z-index: 1001;
+    opacity: 1;
+}
+#toggle-tab:hover {
+    background: rgba(145,70,255,1);
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    background: rgba(24,24,27,0.96);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+    transition: opacity 0.2s ease, top 0.2s ease, transform 0.3 ease;
+    will-change: opacity, top;
+    cursor: grab;
+}
+#overlay:active {
+    cursor: grabbing;
+}
+#overlay.collapsed {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(100%);
+}
+#overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: grab;
+    font-weight: bold;
+}
+#overlay-header:active {
+    cursor: grabbing;
+}
+
+#header-title, #close-btn, #info-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#info-container {
+    position: relative;
+    display: inline-block;
+}
+.info-box {
+    position: absolute;
+    top: 125%;
+    right: 0%;
+    background: rgba(24,24,27,0.96);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    width: 200px;
+    opacity: 0px;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2 ease, transform 0.2s ease;
+    z-index: 1001;
+}
+.info-box.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#searchInput {
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+#results {
+    max-height: 305px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+}
+#results div {
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#results div:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+#map-container {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    transition: max-height 0.3 ease, opacity 0.3 ease;
+    overflow: hidden;
+    opacity: 0;
+}
+#map-container.active {
+    display: flex;
+    opacity: 1;
+}
+
+#map-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+#zoom-toggle {
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+#image-wrapper {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: none;
+}
+
+#map-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.1s ease-out;
+    transform-origin: center center;
+    backface-visibility: hidden;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+#overlay-footer {
+    text-align: center;
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 5px;
+}
+#overlay-footer a {
+    color:white;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    #overlay {
+        width: 100%;
+        max-width: 100%;
+        right: 0;
+        top: 0;
+        border-radius: 0;
+        backdrop-filter: none; /* Better performance on mobile */
+        padding: 10px;
+    }
+    #toggle-tab {
+        top: 40px;
+        height: 55px;
+        width: 26px;
+    }
+    #searchInput {
+        font-size: 16px; /* Prevents iOS zoom on input */
+    }
+    #results {
+        max-height: 160px;
+    }
+    #map-container {
+        min-height: 250px;
+    }
+    #zoom-toggle {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+    #map-controls label {
+        font-size: 14px;
+    }
+}

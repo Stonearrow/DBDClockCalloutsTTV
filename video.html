@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, intitial-scale=1.0" charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https:; script-src 'self' https://extension-files.twitch.tv; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; frame-ancestors https://*.twitch.tv;">
+    <title>DBD Clock Maps Twitch Video Extension</title>
+    <link rel="stylesheet" href="video_styles.css" />
+    <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+</head>
+    <body> 
+        <div id="toggle-tab">◀</div> 
+        <div id="overlay" class="collapsed"> 
+            <div id="overlay-header"> 
+                <div id="header-title">Clock Maps</div> 
+                <div id="header-buttons">
+                    <div id="info-container">
+                        <button id="info-btn">?</button>
+                        <div class="info-box" id="info-box">
+                            <p>Search for a realm or map name, and select the map of your choice.</p>
+                            <p><u>Controls</u></br>Mouse wheel or "Zoom" button to zoom in and out.</p>
+                            <p>While zoomed in, click and drag on the map to pan around.</p>
+                            <p>Drag opacity slider for desired transparency.</p>
+                            <p>Click and drag on toggle tab or header area to move up or down.</p>
+                            <p>Click on the tab again to collapse to the side while remembering choices.</p>
+                            <p>Click on the X to collapse to the side and reset selections.</p>
+                        </div>
+                    </div>
+                    <button id="close-btn">✕</button> 
+                </div>
+            </div> 
+            <div id="searchbar">
+                <input type="text" id="searchInput" placeholder="Search map..." autocomplete="off"/>
+            </div>
+            <div id="results"></div> 
+                <div id="map-container" class="hidden"> 
+                <div id="map-controls"> 
+                    <button id="zoom-toggle">Zoom</button> 
+                    <label> 
+                        Opacity
+                        <input type="range" id="opacity-slider" min="40" max="100">
+                    </label>
+                </div> 
+                <div id="image-wrapper"> 
+                    <img id="map-image"> 
+                </div> 
+            </div> 
+            <div id="overlay-footer">
+                <small>Maps by <a href="https://hens333.com/" target="_blank" rel="noopener noreferrer">Hens333</a> | Extension by MatoGi</br>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSd8honhcoGe5eKgZP4tfHHU3MJchcTCGqlelVSmpRP6Lw9P3A/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer">Submit Feedback</a></small>
+            </div>
+        </div> 
+        <script src="video_script.js"></script>
+    </body> 
+    </html>
