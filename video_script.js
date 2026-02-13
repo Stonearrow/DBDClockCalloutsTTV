@@ -1,19 +1,14 @@
 /* VIDEO OVERLAY */
 const VideoOverlay = (() => {
     /* OBJECTS */
-    const overlay = document.getElementById("overlay");
-    const toggleTab = document.getElementById("toggle-tab");
-    const closeBtn = document.getElementById("close-btn");
-    const dragHandle = document.getElementById("overlay-header");
     const searchInput = document.getElementById("searchInput");
     const results = document.getElementById("results");
-    const mapContainer = document.getElementById("map-container");
     const mapImage = document.getElementById("map-image");
     const imageWrapper = document.getElementById("image-wrapper");
     const zoomToggle = document.getElementById("zoom-toggle");
-    const opacitySlider = document.getElementById("opacity-slider");
     const infoBtn = document.getElementById("info-btn");
     const infoBox = document.getElementById("info-box");
+    const clearBtn = document.getElementById("clear-btn");
 
     /* MAPS */
     const maps = {
@@ -305,14 +300,11 @@ const VideoOverlay = (() => {
     };
 
     /* STATE DECLARATIONS */
-    
     let zoomLevel = parseFloat(localStorage.getItem("mapZoom")) || 1;
-    let opacityLevel = parseFloat(localStorage.getItem("mapOpacity")) || 1;
     let panX = 0, panY = 0, isPanning = false;
     let startX = 0, startY = 0;
     let initialDistance = 0;
     let searchTimeout;
-    let isDraggingOverlay = false, overlayStartY = 0, mouseStartY = 0, didDrag = false;
 
     /* ********* */
     /* FUNCTIONS */
@@ -322,14 +314,15 @@ const VideoOverlay = (() => {
     function showMap(key) {
         if (!maps[key]) return;
 
+        mapImage.onload =() => {
+            zoomLevel = 1;
+            panX = 0;
+            panY = 0;
+            applyTransform();
+        };
         mapImage.src = maps[key].image;
-        mapContainer.classList.add("active");
         searchInput.value = "";
         results.replaceChildren();
-        zoomLevel = 1;
-        panX = 0;
-        panY = 0;
-        applyTransform();
     }
 
     /* SANITIZE SEARCH */
@@ -348,7 +341,6 @@ const VideoOverlay = (() => {
     function runSearch() {
         const query = sanitizeSearch(searchInput.value).toLowerCase().trim();
         results.replaceChildren();
-        mapContainer.classList.remove("active");
         if (!query) return;
 
         Object.keys(maps).forEach(key => {
@@ -362,60 +354,50 @@ const VideoOverlay = (() => {
         });
     }
 
-    /* DRAGGING */
-    function startDrag(e) {
-        // Ignore elements
-        if (e.target.closest("input") || 
-            e.target.closest("#map-controls") ||
-            e.target.closest("#results") || 
-            e.target.closest("#map-container")
-            ) {
-                return;
-            }
-        isDraggingOverlay = true;
-        didDrag = false;
-        overlayStartY = overlay.offsetTop;
-        mouseStartY = e.clientY;
-        e.preventDefault();
-    }
-    function startDragMobile(e) {
-        if (e.touches.length !== 1 ||
-            e.target.closest("input") || 
-            e.target.closest("#map-controls") ||
-            e.target.closest("#results") || 
-            e.target.closest("#map-container")
-        ) {
-            return;
-        }
-        isDraggingOverlay = true;
-        didDrag = false;
-        overlayStartY = overlay.offsetTop;
-        mouseStartY = e.touches[0].clientY;
-        e.preventDefault();
-    }
-
     /* PANNING */
     function getPanBounds() {
         const wrapperRect = imageWrapper.getBoundingClientRect();
-        const scaledWidth = mapImage.naturalWidth * zoomLevel;
-        const scaledHeight = mapImage.naturalHeight * zoomLevel;
+        const wrapperWidth = wrapperRect.width;
+        const wrapperHeight = wrapperRect.height;
 
-        const maxX = Math.max((scaledWidth - wrapperRect.width) / 2, 0);
-        const maxY = Math.max((scaledHeight - wrapperRect.height) / 2, 0);
+        // Actual displayed size of the image
+        const imgRatio = mapImage.naturalWidth / mapImage.naturalHeight;
+        let displayedWidth, displayedHeight;
 
-        return { minX: -maxX, maxX: maxX, minY: -maxY, maxY: maxY };
+        if (wrapperWidth / wrapperHeight > imgRatio) {
+            // wrapper is wider than image ratio → image height fits
+            displayedHeight = wrapperHeight * zoomLevel;
+            displayedWidth = displayedHeight * imgRatio;
+        } else {
+            // wrapper is taller → image width fits
+            displayedWidth = wrapperWidth * zoomLevel;
+            displayedHeight = displayedWidth / imgRatio;
+        }
+
+        let minX, maxX, minY, maxY;
+
+        if (displayedWidth <= wrapperWidth) {
+            minX = maxX = 0;
+        } else {
+            minX = -(displayedWidth - wrapperWidth) / 2;
+            maxX = (displayedWidth - wrapperWidth) / 2;
+        }
+
+        if (displayedHeight <= wrapperHeight) {
+            minY = maxY = 0;
+        } else {
+            minY = -(displayedHeight - wrapperHeight) / 2;
+            maxY = (displayedHeight - wrapperHeight) / 2;
+        }
+
+        return { minX, maxX, minY, maxY };
     }
+
     function applyTransform() {
         const bounds = getPanBounds();
         panX = Math.min(Math.max(panX, bounds.minX), bounds.maxX);
         panY = Math.min(Math.max(panY, bounds.minY), bounds.maxY);
         mapImage.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${zoomLevel})`;
-    }
-    /* BOUNDS CLAMP */
-    function clampOverlayY(y) {
-        const minY = 0;
-        const maxY = window.innerHeight - overlay.offsetHeight;
-        return Math.min(Math.max(y, minY), maxY);
     }
 
     /* GET FINGER DISTANCE (MOBILE) */
@@ -429,30 +411,6 @@ const VideoOverlay = (() => {
     /* ****** */
     /* EVENTS */
     /* ****** */
-
-    /* TOGGLE TAB */
-    toggleTab.addEventListener("click", () => {
-        if (didDrag) return;
-        overlay.classList.toggle("collapsed");
-        // Extension on right side of screen
-        toggleTab.textContent = overlay.classList.contains("collapsed") ? "◀" : "▶";
-        // Extension on left side of screen
-        //toggleTab.textContent = overlay.classList.contains("collapsed") ? "▶" : "◀";
-
-        if (overlay.classList.contains("collapsed")) {
-            // Extension on the right
-            toggleTab.style.right = "0";
-            // Extension on the left
-            //toggleTab.style.left= "344px";
-            //mapContainer.classList.remove("active"); // Clear search on tab close - OPTIONAL
-        } else {
-            // Extension on the right
-            toggleTab.style.right = "344px";
-            // Extension on the left
-            //toggleTab.style.left = "0";
-        }
-        
-    });
     
     /* INFO BUTTON */
     infoBtn.addEventListener("click", (e) => {
@@ -463,61 +421,6 @@ const VideoOverlay = (() => {
         if (!infoBox.contains(e.target) && e.target !== infoBtn) {
             infoBox.classList.remove("active");
         }
-    });
-
-    /* CLOSE BUTTON */
-    closeBtn.addEventListener("click", () => {
-        overlay.classList.add("collapsed");
-        // Extension on right
-        toggleTab.textContent = "◀";
-        // Extension on left
-        //toggleTab.textContent = "▶";
-        searchInput.value = "";
-        results.innerHTML = "";
-        mapContainer.classList.remove("active");
-        toggleTab.style.right = "0";
-    });
-
-    /* OPACITY */
-    opacitySlider.addEventListener("input", () => {
-        opacityLevel = opacitySlider.value / 100;
-        overlay.style.opacity = opacityLevel;
-        toggleTab.style.opacity = opacityLevel;
-        localStorage.setItem("mapOpacity", opacityLevel);
-    });
-
-    /* DRAG HANDLE - DESKTOP */
-    overlay.addEventListener("mousedown", startDrag);
-    toggleTab.addEventListener("mousedown", startDrag);
-    document.addEventListener("mousemove", e => {
-        if (!isDraggingOverlay) return;
-        const deltaY = e.clientY - mouseStartY;
-        const newTop = clampOverlayY(overlayStartY + deltaY);
-        // movement over 5px starts the "drag"
-        if(Math.abs(deltaY) > 5) {
-            didDrag = true;
-        }
-
-        overlay.style.top = `${newTop}px`;
-        toggleTab.style.top = `${newTop + 52}px`;
-    });
-    document.addEventListener("mouseup", () => { 
-        isDraggingOverlay = false; 
-        setTimeout(() => didDrag = false, 0);
-    });
-
-    /* DRAG HANDLE - MOBILE */
-    dragHandle.addEventListener("touchstart", startDragMobile, { passive: false });
-    toggleTab.addEventListener("touchstart", startDragMobile, { passive: false });
-    document.addEventListener("touchmove", e => {
-        if (!isDraggingOverlay || e.touches.length !== 1) return;
-        const deltaY = e.touches[0].clientY - mouseStartY;
-        const newTop = clampOverlayY(overlayStartY + deltaY);
-        overlay.style.top = `${newTop}px`;
-        toggleTab.style.top = `${newTop + 52}px`;
-    }, { passive: false });
-    document.addEventListener("touchend", () => { 
-        isDraggingOverlay = false; 
     });
 
     /* ZOOM WHEEL */
@@ -535,7 +438,16 @@ const VideoOverlay = (() => {
         panY = 0;
         applyTransform();
     });
-
+    clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        results.replaceChildren();
+        mapImage.src = "";
+        panX = 0;
+        panY = 0;
+        zoomLevel = 1;
+        applyTransform();
+    });
+        
     /* PANNING - DESKTOP */
     mapImage.addEventListener("dragstart", e => {
         e.preventDefault();
@@ -588,8 +500,6 @@ const VideoOverlay = (() => {
     /* INIT */
     /* **** */
     const init = () => {
-        mapContainer.style.opacity = opacityLevel;
-        opacitySlider.value = opacityLevel * 100;
         applyTransform();
     };
 
@@ -598,4 +508,9 @@ const VideoOverlay = (() => {
 
 document.addEventListener("DOMContentLoaded", () => {
     VideoOverlay.init();
+
+    /* TWITCH EXTENSION HELPER */
+    window.Twitch.ext.onAuthorized((auth) => {
+        console.log("Twitch extension");
+    });
 });

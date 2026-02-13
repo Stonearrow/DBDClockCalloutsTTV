@@ -178,8 +178,13 @@
             </div>
         </div>
         <div id="map-view" class="hidden">
-            <img id="map-image" src="" alt="Map Image" />
-            <button id="back-btn">⬅ Back</button>
+            <div id="map-controls">
+                <button id="back-btn">⬅ Back</button>
+                <button id="zoom-toggle">Zoom</button>
+            </div>
+            <div id="image-wrapper">
+                <img id="map-image" src="" alt="Map Image"  draggable="false"/>
+            </div>
         </div>
     </div>
     <script src="panel_script.js"></script>

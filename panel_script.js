@@ -1,8 +1,9 @@
-document.addEventListener("DOMContentLoaded", () => {
+/* PANEL OVERLAY */
+const PanelOverlay = (() => {
+    /* OBJECTS */
     const banner = document.getElementById("banner");
     const menu = document.getElementById("menu");
     const mapView = document.getElementById("map-view");
-    const mapTitle = document.getElementById("map-title");
     const mapImage = document.getElementById("map-image");
     const backBtn = document.getElementById("back-btn");
     const wipe = document.getElementById("wipe");
@@ -10,18 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchbar = document.getElementById("searchbar");
     const searchInput = document.getElementById("searchInput");
     const dropdowns = document.querySelectorAll(".dropdown");
+    const imageWrapper = document.getElementById("image-wrapper");
+    const zoomToggle = document.getElementById("zoom-toggle");
 
-    /* TWITCH EXTENSION HELPER */
-    window.Twitch.ext.onAuthorized((auth) => {
-        token = auth.token;
-        userID = auth.userID;
-        channelID = auth.channelID;
-        clientID = auth.clientID;
-        helixToken = auth.helixToken;
-    });
-
-    let lastDropdown = null;
-    let lastScroll = 0;
+    let searchTimeout;
+    let touchStartX = 0, startX = 0, startY = 0, initialDistance = 0;
+    let zoomLevel = 1;
+    let panX = 0, panY = 0, isPanning = false;
 
     /* MAPS */
     const maps = {
@@ -255,48 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    /* SEARCH */
-    let searchTimeout;
-    searchInput.addEventListener("input", () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(runSearch, 150);
-    });
-
-    /* DROPDOWN */
-    dropdowns.forEach(dropdown => {
-        const btn = dropdown.querySelector(".dropdown-btn");
-        btn.addEventListener("click", e => {
-            e.preventDefault();
-
-        // Close other dropdowns
-        dropdowns.forEach(d => {
-            if (d !== dropdown) {
-                d.classList.remove("open");
-            }
-        });
-
-        const isOpen = !dropdown.classList.contains("open");
-        dropdown.classList.toggle("open");
-        lastDropdown = isOpen ? dropdown : null;
-        });
-    });
-
-    /* MAP LINKS */
-    document.querySelectorAll("[data-map]").forEach(link => {
-        link.addEventListener("click", e => {
-            e.preventDefault();
-            lastScroll = menu.scrollTop;
-            lastDropdown = Array.from(dropdowns).find(d=> d.classList.contains("open")) || null;
-            const mapKey = link.dataset.map;
-            runWipe("right", () => showMap(mapKey));
-        });
-    });
-
-    /* BACK BUTTON */
-    backBtn.addEventListener("click", () => {
-        runWipe("left", showMenu);
-    });
-
     /* SEARCH SANITIZE */
     function sanitizeSearch(input) {
         if (input.length > 50) {
@@ -340,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* WIPE ANIMATION */
     function runWipe(direction, callback) {
         wipe.className = "";
-        void wipe.offsetWidth; // force reflow
+        void wipe.offsetWidth;
 
         wipe.classList.add(
             direction === "right" ? "wipe-in-right" : "wipe-in-left"
@@ -360,6 +314,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const map = maps[mapKey];
         if (!map) return;
 
+        mapImage.onload =() => {
+            zoomLevel = 1;
+            panX = 0;
+            panY = 0;
+            applyTransform();
+        };
+
         mapImage.src = map.image;
 
         banner.classList.add("hidden");
@@ -377,9 +338,169 @@ document.addEventListener("DOMContentLoaded", () => {
         runSearch();
     }
 
-    /* SWIPE BACK - MOBILE */
-    let touchStartX = 0;
+    /* PANNING */
+    function getPanBounds() {
+        if (!mapImage.naturalWidth || !mapImage.naturalHeight) {
+            return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+        }
 
+        const wrapperRect = imageWrapper.getBoundingClientRect();
+        const wrapperWidth = wrapperRect.width;
+        const wrapperHeight = wrapperRect.height;
+
+        // Actual displayed size of the image
+        const imgRatio = mapImage.naturalWidth / mapImage.naturalHeight;
+        let displayedWidth, displayedHeight;
+
+        if (wrapperWidth / wrapperHeight > imgRatio) {
+            // wrapper is wider than image ratio → image height fits
+            displayedHeight = wrapperHeight * zoomLevel;
+            displayedWidth = displayedHeight * imgRatio;
+        } else {
+            // wrapper is taller → image width fits
+            displayedWidth = wrapperWidth * zoomLevel;
+            displayedHeight = displayedWidth / imgRatio;
+        }
+
+        let minX, maxX, minY, maxY;
+
+        if (displayedWidth <= wrapperWidth) {
+            minX = maxX = 0;
+        } else {
+            minX = -(displayedWidth - wrapperWidth) / 2;
+            maxX = (displayedWidth - wrapperWidth) / 2;
+        }
+
+        if (displayedHeight <= wrapperHeight) {
+            minY = maxY = 0;
+        } else {
+            minY = -(displayedHeight - wrapperHeight) / 2;
+            maxY = (displayedHeight - wrapperHeight) / 2;
+        }
+
+        return { minX, maxX, minY, maxY };
+    }
+
+    function applyTransform() {
+        const bounds = getPanBounds();
+        panX = Math.min(Math.max(panX, bounds.minX), bounds.maxX);
+        panY = Math.min(Math.max(panY, bounds.minY), bounds.maxY);
+        mapImage.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${zoomLevel})`;
+    }
+
+    /* SEARCH */
+    searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(runSearch, 150);
+    });
+
+    /* DROPDOWN */
+    dropdowns.forEach(dropdown => {
+        const btn = dropdown.querySelector(".dropdown-btn");
+        btn.addEventListener("click", e => {
+            e.preventDefault();
+
+        // Close other dropdowns
+        dropdowns.forEach(d => {
+            if (d !== dropdown) {
+                d.classList.remove("open");
+            }
+        });
+
+        const isOpen = !dropdown.classList.contains("open");
+        dropdown.classList.toggle("open");
+        lastDropdown = isOpen ? dropdown : null;
+        });
+    });
+
+    /* MAP LINKS */
+    document.querySelectorAll("[data-map]").forEach(link => {
+        link.addEventListener("click", e => {
+            e.preventDefault();
+            lastScroll = menu.scrollTop;
+            lastDropdown = Array.from(dropdowns).find(d=> d.classList.contains("open")) || null;
+            const mapKey = link.dataset.map;
+            runWipe("right", () => showMap(mapKey));
+        });
+    });
+
+    /* BACK BUTTON */
+    backBtn.addEventListener("click", () => {
+        runWipe("left", showMenu);
+        panX = 0;
+        panY = 0;
+        zoomLevel = 1;
+        applyTransform();
+    });
+
+    /* ZOOM */
+    imageWrapper.addEventListener("wheel", e => {
+        if (!mapImage.complete || !mapImage.naturalWidth) return;
+        
+        e.preventDefault();
+        zoomLevel += e.deltaY * -0.0015;
+        zoomLevel = Math.min(Math.max(1, zoomLevel), 3);
+        applyTransform();
+        localStorage.setItem("mapZoom", zoomLevel);
+    }, { passive: false });
+
+    zoomToggle.addEventListener("click", () => {
+        zoomLevel = zoomLevel === 1 ? 2 : 1;
+        panX = 0;
+        panY = 0;
+        applyTransform();
+    });
+        
+    /* PANNING - DESKTOP */
+    mapImage.addEventListener("dragstart", e => {
+        e.preventDefault();
+    });
+    imageWrapper.addEventListener("mousedown", e => {
+        e.preventDefault();
+        if (zoomLevel <= 1) return;
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+    });
+    document.addEventListener("mousemove", e => {
+        if (!isPanning) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        applyTransform();
+    });
+    document.addEventListener("mouseup", () => { 
+        isPanning = false; 
+    });
+
+    /* PANNING/ZOOM - MOBILE */
+    imageWrapper.addEventListener("touchstart", e => {
+        if (e.touches.length === 2) initialDistance = getDistance(e.touches);
+        if (e.touches.length === 1 && zoomLevel > 1) {
+            isPanning = true;
+            startX = e.touches[0].clientX - panX;
+            startY = e.touches[0].clientY - panY;
+        }
+    }, { passive: false });
+    imageWrapper.addEventListener("touchmove", e => {
+        if (e.touches.length === 2) {
+            const newDistance = getDistance(e.touches);
+            zoomLevel *= newDistance / initialDistance;
+            zoomLevel = Math.min(Math.max(1, zoomLevel), 3);
+            initialDistance = newDistance;
+            applyTransform();
+        }
+        if (e.touches.length === 1 && isPanning) {
+            panX = e.touches[0].clientX - startX;
+            panY = e.touches[0].clientY - startY;
+            applyTransform();
+        }
+        e.preventDefault();
+    }, { passive: false });
+    imageWrapper.addEventListener("touchend", () => { 
+        isPanning = false; 
+    });
+
+    /* SWIPE BACK - MOBILE */
     app.addEventListener("touchstart", e => {
         if (!e.touches.length) return;
         touchStartX = e.touches[0].clientX;
@@ -392,5 +513,23 @@ document.addEventListener("DOMContentLoaded", () => {
         if (diff > 80 && !mapView.classList.contains("hidden")) {
             runWipe("left", showMenu);
         }
+    });
+
+    /* **** */
+    /* INIT */
+    /* **** */
+    const init = () => {
+        applyTransform();
+    };
+
+    return { init, showMenu };
+})();
+
+document.addEventListener("DOMContentLoaded", () => {
+    PanelOverlay.init();
+
+    /* TWITCH EXTENSION HELPER */
+    window.Twitch.ext.onAuthorized((auth) => {
+        console.log("Twitch extension");
     });
 });

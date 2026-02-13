@@ -7,34 +7,11 @@ html, body {
     color: white;
 }
 
-#toggle-tab {
-    position: absolute;
-    right: 0; /* Tab right side */
-    /*left: 0;*/ /* Tab left side */
-    top: 52px;
-    width: 28px;
-    height: 65px;
-    background: rgba(145,70,255,0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 8px 0 0 8px;
-    user-select: none;
-    transition: background 0.2s ease, opacity 0.2 ease, left 0.3 ease;
-    transform: translateY(-50%);
-    z-index: 1001;
-    opacity: 1;
-}
-#toggle-tab:hover {
-    background: rgba(145,70,255,1);
-}
-
 #overlay {
     position: fixed;
     top: 0;
     right: 0;
-    width: 320px;
+    width: 99%;
     background: rgba(24,24,27,0.96);
     backdrop-filter: blur(8px);
     border-radius: 10px;
@@ -42,41 +19,42 @@ html, body {
     display: flex;
     flex-direction: column;
     opacity: 1;
-    transition: opacity 0.2s ease, top 0.2s ease, transform 0.3 ease;
-    will-change: opacity, top;
-    cursor: grab;
-}
-#overlay:active {
-    cursor: grabbing;
-}
-#overlay.collapsed {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(100%);
-}
-#overlay-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    cursor: grab;
-    font-weight: bold;
-}
-#overlay-header:active {
-    cursor: grabbing;
+    transition: top 0.2s ease, transform 0.3 ease;
+    will-change: top;
 }
 
-#header-title, #close-btn, #info-btn {
+#overlay-header {
+    position: relative;
+}
+#searchbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#searchInput {
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    margin-bottom: 8px;
+    font-size: 40px;
+}
+
+#info-container {
+    position: absolute;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#info-btn {
     background: none;
     border: none;
     color: white;
     cursor: pointer;
-    font-size: 16px;
-}
-
-#info-container {
-    position: relative;
-    display: inline-block;
+    font-size: 40px;
 }
 .info-box {
     position: absolute;
@@ -86,12 +64,12 @@ html, body {
     color: white;
     padding: 10px;
     border-radius: 5px;
-    font-size: 12px;
-    width: 200px;
-    opacity: 0px;
+    font-size: 40px;
+    width: 500px;
+    opacity: 0;
     visibility: hidden;
     transform: translateY(-4px);
-    transition: opacity 0.2 ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
     z-index: 1001;
 }
 .info-box.active {
@@ -100,38 +78,35 @@ html, body {
     transform: translateY(0);
 }
 
-#searchInput {
-    padding: 8px;
-    border-radius: 4px;
-    border: none;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
 #results {
-    max-height: 305px;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 100px;
+    right: 0;
+    max-height: 400px;
+    width: 80%;
     overflow-y: auto;
-    margin-bottom: 8px;
-}
-#results div {
-    padding: 6px;
+    background: rgba(24,24,27,0.96);
     border-radius: 4px;
-    cursor: pointer;
+    z-index: 1001;
+    margin: 0;
+    font-size: 40px;
+    padding: 5px 0;
+    box-sizing: border-box;
+}
+#results:empty {
+    display: none;
 }
 #results div:hover {
     background: rgba(255,255,255,0.1);
 }
 
 #map-container {
-    flex: 1;
-    display: none;
-    flex-direction: column;
-    transition: max-height 0.3 ease, opacity 0.3 ease;
-    overflow: hidden;
-    opacity: 0;
-}
-#map-container.active {
+    flex: none;
     display: flex;
+    flex-direction: column;
+    height: 860px;
+    overflow: hidden;
     opacity: 1;
 }
 
@@ -142,10 +117,15 @@ html, body {
     font-size: 12px;
     margin-bottom: 5px;
 }
-
 #zoom-toggle {
     padding: 4px 8px;
     cursor: pointer;
+    font-size: 40px;
+}
+#clear-btn {
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 40px;
 }
 
 #image-wrapper {
@@ -163,14 +143,12 @@ html, body {
     object-fit: contain;
     transition: transform 0.1s ease-out;
     transform-origin: center center;
-    backface-visibility: hidden;
     will-change: transform;
-    transform: translateZ(0);
 }
 
 #overlay-footer {
     text-align: center;
-    font-size: 12px;
+    font-size: 30px;
     opacity: 0.6;
     margin-top: 5px;
 }
