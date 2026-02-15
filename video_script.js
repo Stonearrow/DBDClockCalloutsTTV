@@ -303,7 +303,6 @@ const VideoOverlay = (() => {
     let zoomLevel = parseFloat(localStorage.getItem("mapZoom")) || 1;
     let panX = 0, panY = 0, isPanning = false;
     let startX = 0, startY = 0;
-    let initialDistance = 0;
     let searchTimeout;
 
     /* ********* */
@@ -452,47 +451,19 @@ const VideoOverlay = (() => {
     mapImage.addEventListener("dragstart", e => {
         e.preventDefault();
     });
-    imageWrapper.addEventListener("mousedown", e => {
+    imageWrapper.addEventListener("pointerdown", e => {
         if (zoomLevel <= 1) return;
         isPanning = true;
         startX = e.clientX - panX;
         startY = e.clientY - panY;
     });
-    document.addEventListener("mousemove", e => {
+    document.addEventListener("pointermove", e => {
         if (!isPanning) return;
         panX = e.clientX - startX;
         panY = e.clientY - startY;
         applyTransform();
     });
-    document.addEventListener("mouseup", () => { 
-        isPanning = false; 
-    });
-
-    /* PANNING/ZOOM - MOBILE */
-    imageWrapper.addEventListener("touchstart", e => {
-        if (e.touches.length === 2) initialDistance = getDistance(e.touches);
-        if (e.touches.length === 1 && zoomLevel > 1) {
-            isPanning = true;
-            startX = e.touches[0].clientX - panX;
-            startY = e.touches[0].clientY - panY;
-        }
-    }, { passive: false });
-    imageWrapper.addEventListener("touchmove", e => {
-        if (e.touches.length === 2) {
-            const newDistance = getDistance(e.touches);
-            zoomLevel *= newDistance / initialDistance;
-            zoomLevel = Math.min(Math.max(1, zoomLevel), 3);
-            initialDistance = newDistance;
-            applyTransform();
-        }
-        if (e.touches.length === 1 && isPanning) {
-            panX = e.touches[0].clientX - startX;
-            panY = e.touches[0].clientY - startY;
-            applyTransform();
-        }
-        e.preventDefault();
-    }, { passive: false });
-    imageWrapper.addEventListener("touchend", () => { 
+    document.addEventListener("pointerup", () => { 
         isPanning = false; 
     });
 

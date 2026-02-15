@@ -388,6 +388,14 @@ const PanelOverlay = (() => {
         mapImage.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${zoomLevel})`;
     }
 
+    /* GET FINGER DISTANCE (MOBILE) */
+    function getDistance(touches) {
+        return Math.hypot(
+            touches[0].clientX - touches[1].clientX,
+            touches[0].clientY - touches[1].clientY
+        );
+    }
+
     /* SEARCH */
     searchInput.addEventListener("input", () => {
         clearTimeout(searchTimeout);
@@ -436,7 +444,7 @@ const PanelOverlay = (() => {
     /* ZOOM */
     imageWrapper.addEventListener("wheel", e => {
         if (!mapImage.complete || !mapImage.naturalWidth) return;
-        
+
         e.preventDefault();
         zoomLevel += e.deltaY * -0.0015;
         zoomLevel = Math.min(Math.max(1, zoomLevel), 3);
@@ -455,31 +463,38 @@ const PanelOverlay = (() => {
     mapImage.addEventListener("dragstart", e => {
         e.preventDefault();
     });
-    imageWrapper.addEventListener("mousedown", e => {
-        e.preventDefault();
+
+    imageWrapper.addEventListener("pointerdown", e => {
         if (zoomLevel <= 1) return;
+
+        imageWrapper.setPointerCapture(e.pointerId);
+
         isPanning = true;
         startX = e.clientX - panX;
         startY = e.clientY - panY;
     });
-    document.addEventListener("mousemove", e => {
+
+    imageWrapper.addEventListener("pointermove", e => {
         if (!isPanning) return;
+
         panX = e.clientX - startX;
         panY = e.clientY - startY;
         applyTransform();
     });
-    document.addEventListener("mouseup", () => { 
-        isPanning = false; 
+
+    imageWrapper.addEventListener("pointerup", e => {
+        imageWrapper.releasePointerCapture(e.pointerId);
+        isPanning = false;
     });
 
-    /* PANNING/ZOOM - MOBILE */
+    imageWrapper.addEventListener("pointercancel", e => {
+        imageWrapper.releasePointerCapture(e.pointerId);
+        isPanning = false;
+    });
+
+    /* ZOOM - MOBILE */
     imageWrapper.addEventListener("touchstart", e => {
         if (e.touches.length === 2) initialDistance = getDistance(e.touches);
-        if (e.touches.length === 1 && zoomLevel > 1) {
-            isPanning = true;
-            startX = e.touches[0].clientX - panX;
-            startY = e.touches[0].clientY - panY;
-        }
     }, { passive: false });
     imageWrapper.addEventListener("touchmove", e => {
         if (e.touches.length === 2) {
@@ -489,31 +504,8 @@ const PanelOverlay = (() => {
             initialDistance = newDistance;
             applyTransform();
         }
-        if (e.touches.length === 1 && isPanning) {
-            panX = e.touches[0].clientX - startX;
-            panY = e.touches[0].clientY - startY;
-            applyTransform();
-        }
         e.preventDefault();
     }, { passive: false });
-    imageWrapper.addEventListener("touchend", () => { 
-        isPanning = false; 
-    });
-
-    /* SWIPE BACK - MOBILE */
-    app.addEventListener("touchstart", e => {
-        if (!e.touches.length) return;
-        touchStartX = e.touches[0].clientX;
-    }, { passive: true});
-
-    app.addEventListener("touchend", e => {
-        if (!e.changedTouches.length) return;
-        const diff = e.changedTouches[0].clientX - touchStartX;
-
-        if (diff > 80 && !mapView.classList.contains("hidden")) {
-            runWipe("left", showMenu);
-        }
-    });
 
     /* **** */
     /* INIT */
