@@ -1,0 +1,51 @@
+Terms of Service
+
+Effective Date: 2/19/2026
+Extension Name: Dead by Daylight Clock Maps
+
+1. Acceptance of Terms
+
+By installing or using the Dead by Daylight Clock Maps Twitch Extension (“Extension”), you agree to these Terms of Service (“Terms”). If you do not agree, do not use the Extension.
+
+2. Description of the Extension
+
+Dead by Daylight Clock Maps is a Twitch Extension that displays maps and related visual information within Twitch streams. The Extension is provided “as is” and may be updated, modified, or discontinued at any time. The maps are created by Hens333 and has granted permission to use. As such, the maps may be updated, modified, or discontinued at any time by Hens333.
+
+3. Eligibility
+
+You must comply with the terms and policies of Twitch in order to use this Extension.
+
+4. Acceptable Use
+
+You agree not to:
+
+Use the Extension for unlawful purposes
+
+Attempt to interfere with or disrupt the Extension’s functionality
+
+Reverse engineer or attempt to extract source code
+
+Use the Extension in a way that violates Twitch’s policies
+
+5. Intellectual Property
+
+All rights, title, and interest in and to the Extension (excluding third-party services or map providers) are owned by MatoGi.
+
+Map data and related services may be provided by third-party providers and are subject to their respective terms.
+
+6. Disclaimer of Warranties
+
+The Extension is provided “as is” without warranties of any kind, express or implied. We do not guarantee that the Extension will be uninterrupted, secure, or error-free.
+
+7. Limitation of Liability
+
+To the fullest extent permitted by law, MatoGi shall not be liable for any indirect, incidental, or consequential damages arising from the use of the Extension.
+
+8. Changes to These Terms
+
+We may update these Terms from time to time. Continued use of the Extension after changes means you accept the updated Terms.
+
+9. Contact
+
+If you have questions about these Terms, contact:
+Email: mahpiyaate@gmail.com
